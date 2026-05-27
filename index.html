@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ديال العقل 🇲🇦</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════ INTRO ══════════════════════════════════ -->
+  <div id="screen-intro" class="screen active">
+    <canvas id="particles-canvas"></canvas>
+    <div class="intro-content">
+      <div class="logo darija-logo">ديال<span>العقل</span></div>
+      <p class="tagline darija-tag">🇲🇦 Le jeu qui fait chauffer le cerveau</p>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-mode-1" onclick="Game.setMode(1)">👤 Solo</button>
+        <button class="mode-btn"        id="btn-mode-2" onclick="Game.setMode(2)">👥 2 Joueurs</button>
+        <button class="mode-btn"        id="btn-mode-4" onclick="Game.setMode(4)">🔥 4 Joueurs</button>
+      </div>
+      <button class="btn btn-primary darija-btn" onclick="Game.goTo('char-select')">▶&nbsp; Jouer !</button>
+      <button class="btn btn-ghost" onclick="Game.quit()">✕&nbsp; Quitter</button>
+      <div class="darija-disclaimer">
+        ⚠️ Les insultes dans ce jeu sont en dialecte marocain et ne visent personne — c'est juste pour rire !
+      </div>
+    </div>
+    <div class="intro-version">v2.0 · نسخة الدارجة 🇲🇦</div>
+    <button class="sound-btn" id="btn-sound" onclick="Game.toggleSound()">🔊</button>
+  </div>
+
+  <!-- ═══════════════════════════════ NAME INPUT ═══════════════════════════════ -->
+  <div id="screen-char-select" class="screen">
+    <h2 class="screen-title">Entrez vos prénoms / أسماؤكم</h2>
+    <div id="name-inputs-container" class="name-inputs-container"></div>
+    <div class="char-select-actions">
+      <button class="btn btn-ghost small" onclick="Game.goTo('intro')">← Retour</button>
+      <button class="btn btn-primary" id="btn-start" onclick="Game.startGame()" disabled>Jouer ▶</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ JEU ════════════════════════════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="hud" id="game-hud"></div>
+    <canvas id="maze-canvas"></canvas>
+    <div id="interaction-bar" class="interaction-bar hidden"></div>
+    <div class="controls-hint" id="controls-hint"></div>
+  </div>
+
+  <!-- ════════════════════ QUESTION ════════════════════ -->
+  <div id="screen-question" class="screen">
+    <div class="question-card arabic-card">
+      <div class="question-category" id="question-category"></div>
+      <div class="question-badge darija-badge" id="question-badge">❓ سؤال</div>
+      <p class="question-text arabic-text" id="question-text">…</p>
+      <div class="question-answers" id="question-answers"></div>
+      <div class="question-feedback" id="question-feedback"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ KING OVERLAY (correct) ══════════════════ -->
+  <div id="king-overlay" class="king-overlay hidden">
+    <div class="king-card">
+      <div class="king-stars">⭐⭐⭐⭐⭐</div>
+      <div class="king-photo-wrapper">
+        <img id="king-photo" src="img/king.jpg" alt="جلالة الملك"
+             onerror="document.getElementById('king-photo-fallback').style.display='flex'; this.style.display='none'">
+        <div id="king-photo-fallback" class="king-fallback" style="display:none">
+          <div class="king-crown-big">👑</div>
+          <div class="king-silhouette">🤴</div>
+        </div>
+      </div>
+      <div class="king-title">جلالة الملك محمد السادس</div>
+      <div class="king-subtitle">أمير المؤمنين · حفظه الله</div>
+      <div class="king-flag">🇲🇦</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ WRONG KING OVERLAY ══════════════════ -->
+  <div id="wrong-king-overlay" class="wrong-king-overlay hidden">
+    <div class="wrong-king-card">
+      <div class="wrong-king-header">❌ غلطتي — هادا جزاءك!</div>
+      <div class="wrong-king-photo-wrapper">
+        <img id="wrong-king-photo" src="img/wrong-king.jpg" alt="😬"
+             onerror="document.getElementById('wrong-king-fallback').style.display='flex'; this.style.display='none'">
+        <div id="wrong-king-fallback" class="wrong-king-fallback" style="display:none">
+          <div style="font-size:80px">😂</div>
+          <div style="font-size:40px">💀</div>
+        </div>
+      </div>
+      <div class="wrong-king-footer arabic-text">-50 نقطة — هشا تعلّم!</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ VICTOIRE ═══════════════════════ -->
+  <div id="screen-victory" class="screen">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="victory-content">
+      <div class="trophy">🏆</div>
+      <h1 class="victory-title arabic-text" id="victory-title">ربحتي!</h1>
+      <div id="victory-body"></div>
+      <div class="victory-actions">
+        <button class="btn btn-primary" onclick="Game.restart()">🔄 Rejouer</button>
+        <button class="btn btn-ghost"   onclick="Game.goTo('intro')">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ PAUSE ════════════════════════ -->
+  <div id="overlay-pause" class="overlay hidden">
+    <div class="pause-card">
+      <h2>⏸ Pause</h2>
+      <button class="btn btn-primary" onclick="Game.pauseToggle()">▶ Continuer</button>
+      <button class="btn btn-ghost"   onclick="Game.goTo('intro')">🏠 Menu</button>
+    </div>
+  </div>
+
+  <div id="chat-layer"></div>
+
+  <script src="js/sounds.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/maze.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
