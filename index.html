@@ -92,13 +92,39 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ NAME INPUT ═══════════════════════════════ -->
+  <!-- ═══════════════════════ CHAR SELECT (prénom + personnage) ════════════════ -->
   <div id="screen-char-select" class="screen">
-    <h2 class="screen-title">Entrez vos prénoms / أسماؤكم</h2>
-    <div id="name-inputs-container" class="name-inputs-container"></div>
-    <div class="char-select-actions">
-      <button class="btn btn-ghost small" onclick="Game.goTo('intro')">← Retour</button>
-      <button class="btn btn-primary" id="btn-start" onclick="Game.startGame()" disabled>Jouer ▶</button>
+    <div class="char-select-wrapper">
+      <h2 class="screen-title" style="margin-bottom:4px">Choisis ton personnage</h2>
+
+      <!-- Joueur 1 -->
+      <div class="player-setup-block" id="player-setup-0">
+        <div class="player-setup-header">
+          <span class="player-setup-dot" style="background:#38A0FF"></span>
+          <span id="player-setup-label-0">Joueur 1</span>
+        </div>
+        <input type="text" id="name-input-0" class="name-input-field"
+               placeholder="Ton prénom / لقبك..." maxlength="16" autocomplete="off"
+               oninput="Game.onNameInput()" />
+        <div class="chars-grid" id="chars-grid-0"></div>
+      </div>
+
+      <!-- Joueur 2 (caché en solo) -->
+      <div class="player-setup-block hidden" id="player-setup-1">
+        <div class="player-setup-header">
+          <span class="player-setup-dot" style="background:#FF3333"></span>
+          <span id="player-setup-label-1">Joueur 2</span>
+        </div>
+        <input type="text" id="name-input-1" class="name-input-field"
+               placeholder="Ton prénom / لقبك..." maxlength="16" autocomplete="off"
+               oninput="Game.onNameInput()" />
+        <div class="chars-grid" id="chars-grid-1"></div>
+      </div>
+
+      <div class="char-select-actions">
+        <button class="btn btn-ghost small" onclick="Game.goTo('intro')">← Retour</button>
+        <button class="btn btn-primary" id="btn-start" onclick="Game.startGame()" disabled>Jouer ▶</button>
+      </div>
     </div>
   </div>
 
@@ -240,6 +266,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
+  <script src="js/characters.js"></script>
   <script src="js/sounds.js"></script>
   <script src="js/interactions.js"></script>
   <script src="js/maze.js"></script>

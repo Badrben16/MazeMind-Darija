@@ -182,34 +182,61 @@ const Game = (() => {
     goTo('game');
   }
 
-  // ── Name Select (local) ───────────────────────
+  // ── Char + Name Select ────────────────────────
+  let selectedChars = [null, null]; // chosen CHARACTERS entry per player slot
+
   function initNameSelect() {
     playerNames=['','','',''];
-    const container=$('name-inputs-container'); container.innerHTML='';
+    selectedChars=[null,null];
     $('btn-start').disabled=true;
-    const configs=PLAYER_CONFIGS.slice(0,numPlayers);
-    configs.forEach((pc,i)=>{
-      const div=document.createElement('div');
-      div.className='name-input-block'; div.style.borderColor=pc.color;
-      div.innerHTML=`
-        <div class="name-input-header">
-          <span class="name-player-emoji">${pc.emoji}</span>
-          <span class="name-player-label" style="color:${pc.color}">Joueur ${i+1}</span>
+
+    // Show/hide player 2 block
+    $('player-setup-1').classList.toggle('hidden', numPlayers===1);
+
+    for(let i=0;i<numPlayers;i++){
+      $(`name-input-${i}`).value='';
+      buildCharGrid(i);
+    }
+  }
+
+  function buildCharGrid(playerIdx) {
+    const grid=$(`chars-grid-${playerIdx}`); if(!grid) return;
+    grid.innerHTML='';
+    CHARACTERS.forEach(ch=>{
+      const card=document.createElement('div');
+      card.className='char-card-dofus';
+      card.style.background=ch.bg;
+      card.style.borderColor=ch.border;
+      card.innerHTML=`
+        <div class="char-emoji-big">${ch.emoji}</div>
+        <div class="char-name-ar arabic-text" style="color:${ch.color}">${ch.name}</div>
+        <div class="char-title-fr">${ch.title}</div>
+        <div class="char-ability-badge" style="background:${ch.color}22;border-color:${ch.color}66;color:${ch.color}">
+          ${ch.abilityLabel}
         </div>
-        <input type="text" id="name-input-${i}" class="name-input-field"
-               placeholder="Prénom / لقب..." maxlength="16" autocomplete="off"
-               oninput="Game.onNameInput()" />`;
-      container.appendChild(div);
+        <div class="char-ability-desc arabic-text">${ch.abilityDesc}</div>
+        <div class="char-speed-dots">${Array.from({length:5},(_,i)=>`<span class="${i<ch.speedDots?'dot on':'dot'}"></span>`).join('')}</div>`;
+      card.addEventListener('click',()=>{
+        grid.querySelectorAll('.char-card-dofus').forEach(c=>c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedChars[playerIdx]=ch;
+        checkCanStart();
+      });
+      grid.appendChild(card);
     });
   }
 
   function onNameInput() {
-    const configs=PLAYER_CONFIGS.slice(0,numPlayers);
+    checkCanStart();
+  }
+
+  function checkCanStart() {
     let ok=true;
-    configs.forEach((_,i)=>{
-      const v=($(`name-input-${i}`)?.value||'').trim();
-      playerNames[i]=v; if(!v) ok=false;
-    });
+    for(let i=0;i<numPlayers;i++){
+      const name=($(`name-input-${i}`)?.value||'').trim();
+      playerNames[i]=name;
+      if(!name||!selectedChars[i]) ok=false;
+    }
     $('btn-start').disabled=!ok;
   }
 
@@ -265,18 +292,26 @@ const Game = (() => {
   function buildPlayers(sz) {
     const corners=[[0,0],[sz.cols-1,0],[0,sz.rows-1],[sz.cols-1,sz.rows-1]];
     if(onlineMode) {
-      // Only my player — remote players added via Firebase
+      const ch=selectedChars[0]||CHARACTERS[0];
       return [{ id:myOnlineId||'p_me', idx:0, team:0, x:0, y:0,
-        color:'#38A0FF', emoji:'🧔', name:playerNames[0]||'Moi',
-        moveDelay:160, remote:false,
+        color:ch.color, emoji:ch.emoji, name:playerNames[0]||'Moi',
+        char:ch, moveDelay:_moveDelay(ch), remote:false,
         frozen:false, frozenUntil:0, helpActive:false, helpUntil:0 }];
     }
-    return PLAYER_CONFIGS.slice(0,numPlayers).map((pc,i)=>({
-      id:pc.id, idx:i, team:pc.team, x:corners[i][0], y:corners[i][1],
-      color:pc.color, emoji:pc.emoji, name:playerNames[i]||`J${i+1}`,
-      moveDelay:160, moveKeys:pc.move, remote:false,
-      frozen:false, frozenUntil:0, helpActive:false, helpUntil:0,
-    }));
+    return PLAYER_CONFIGS.slice(0,numPlayers).map((pc,i)=>{
+      const ch=selectedChars[i]||CHARACTERS[i%CHARACTERS.length];
+      return { id:pc.id, idx:i, team:pc.team,
+        x:corners[i][0], y:corners[i][1],
+        color:ch.color, emoji:ch.emoji, name:playerNames[i]||`J${i+1}`,
+        char:ch, moveDelay:_moveDelay(ch), moveKeys:pc.move, remote:false,
+        frozen:false, frozenUntil:0,
+        helpActive:ch.ability==='wideFov', helpUntil:Infinity, // Djinn always has wide FOV
+      };
+    });
+  }
+
+  function _moveDelay(ch) {
+    return ch?.ability==='speed' ? 85 : 160;
   }
 
   // ── D-pad visibility ──────────────────────────
@@ -448,31 +483,36 @@ const Game = (() => {
       return;
     }
     if(cell.type===CELL.TRAP){
-      addScore(p.idx,-30);
-      showPopup(TRAP_MSGS[Math.floor(Math.random()*TRAP_MSGS.length)],'#FF5733');
-      Sounds.play.trap(); return;
+      if(p.char?.ability==='immuneTrap'){
+        showPopup('🎩 محصّن سياسيا — والو!','#FFD700');
+      } else {
+        addScore(p.idx,-30);
+        showPopup(TRAP_MSGS[Math.floor(Math.random()*TRAP_MSGS.length)],'#FF5733');
+        Sounds.play.trap();
+      }
+      return;
     }
     if(cell.type===CELL.BONUS&&!cell.looted){
+      const pts=p.char?.ability==='bonusDouble'?60:30;
       if(onlineMode){
         Online.claimCell(p.x,p.y).then(ok=>{
-          if(ok){ cell.looted=true; addScore(p.idx,30); showPopup('⭐ +30!','#FFD700'); Sounds.play.bonus(); }
+          if(ok){ cell.looted=true; addScore(p.idx,pts); showPopup(`⭐ +${pts}!`,'#FFD700'); Sounds.play.bonus(); }
         });
       } else {
-        cell.looted=true; addScore(p.idx,30); showPopup('⭐ +30!','#FFD700'); Sounds.play.bonus();
+        cell.looted=true; addScore(p.idx,pts); showPopup(`⭐ +${pts}!`,'#FFD700'); Sounds.play.bonus();
       }
       return;
     }
     if(cell.type===CELL.CHEST&&!cell.looted){
       if(onlineMode){
-        Online.claimCell(p.x,p.y).then(ok=>{
-          if(ok){ cell.looted=true; _openChest(p); }
-        });
+        Online.claimCell(p.x,p.y).then(ok=>{ if(ok){ cell.looted=true; _openChest(p); } });
       } else { cell.looted=true; _openChest(p); }
     }
   }
 
   function _openChest(p){
-    if(Math.random()<.5){addScore(p.idx,50);showPopup('📦 +50 — الله يبارك!','#FFD700');}
+    const mult=p.char?.ability==='bonusDouble'?2:1;
+    if(Math.random()<.5){addScore(p.idx,50*mult);showPopup(`📦 +${50*mult} — الله يبارك!`,'#FFD700');}
     else{addScore(p.idx,-20);showPopup('📦 -20 — شي غاشي!','#FF5733');}
     Sounds.play.chest();
   }
@@ -514,8 +554,10 @@ const Game = (() => {
         box.querySelectorAll('.answer-btn').forEach((b,j)=>{b.onclick=null;if(j===q.correct)b.classList.add('correct');});
         const fb=$('question-feedback');
         if(i===q.correct){
-          btn.classList.add('correct'); addScore(p.idx,100);
-          fb.textContent='✅ صح! +100 نقطة'; fb.className='question-feedback ok';
+          btn.classList.add('correct');
+          const pts=p.char?.ability==='bonusAnswer'?150:100;
+          addScore(p.idx,pts);
+          fb.textContent=`✅ صح! +${pts} نقطة`; fb.className='question-feedback ok';
           Sounds.play.correct();
           setTimeout(()=>{ $('screen-question').classList.remove('active'); questionActive=false; },1800);
         } else {
@@ -543,10 +585,11 @@ const Game = (() => {
     const nearOther=others.length?others.reduce((n,p)=>Math.hypot(p.x-actor.x,p.y-actor.y)<Math.hypot(n.x-actor.x,n.y-actor.y)?p:n,others[0]):null;
     let result;
     if(action==='punish'||action==='pardon'){if(!nearOther){showPopup('ما فيش حد!','#888');return;}}
-    if(action==='punish') result=Interactions.punish(who);
-    else if(action==='pardon') result=Interactions.pardon(who);
-    else if(action==='help') result=Interactions.help(who);
-    else result=Interactions.taunt(who);
+    const fast=actor.char?.ability==='fastInteract';
+    if(action==='punish') result=Interactions.punish(who,fast);
+    else if(action==='pardon') result=Interactions.pardon(who,fast);
+    else if(action==='help') result=Interactions.help(who,fast);
+    else result=Interactions.taunt(who,fast);
     if(!result?.ok){ if(result?.cd) showPopup(`⏳ ${result.cd}s`,'#888'); return; }
     const cv=$('maze-canvas'),rect=cv.getBoundingClientRect(),cs=renderer.cell;
     const bx=rect.left+actor.x*cs+cs/2, by=rect.top+actor.y*cs;

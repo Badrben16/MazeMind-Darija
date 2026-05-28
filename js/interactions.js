@@ -75,30 +75,31 @@ const Interactions = (() => {
   const lastUsed = {};
 
   function key(who, action) { return `${who}_${action}`; }
-  function canUse(who, action) { return Date.now() - (lastUsed[key(who,action)]||0) >= CD[action]; }
+  function _cd(action, fast) { return fast ? CD[action]/2 : CD[action]; }
+  function canUse(who, action, fast) { return Date.now()-(lastUsed[key(who,action)]||0) >= _cd(action,fast); }
   function use(who, action)    { lastUsed[key(who,action)] = Date.now(); }
   function remaining(who, action) {
     return Math.max(0, Math.ceil((CD[action] - (Date.now()-(lastUsed[key(who,action)]||0)))/1000));
   }
   function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 
-  function punish(who) {
-    if (!canUse(who,'punish')) return { ok:false, cd:remaining(who,'punish') };
+  function punish(who, fast) {
+    if (!canUse(who,'punish',fast)) return { ok:false, cd:remaining(who,'punish') };
     use(who,'punish');
     return { ok:true, action:'punish', msg:rand(PUNISH_MSGS), duration:3500 };
   }
-  function pardon(who) {
-    if (!canUse(who,'pardon')) return { ok:false, cd:remaining(who,'pardon') };
+  function pardon(who, fast) {
+    if (!canUse(who,'pardon',fast)) return { ok:false, cd:remaining(who,'pardon') };
     use(who,'pardon');
     return { ok:true, action:'pardon', msg:rand(PARDON_MSGS), pts:40 };
   }
-  function help(who) {
-    if (!canUse(who,'help')) return { ok:false, cd:remaining(who,'help') };
+  function help(who, fast) {
+    if (!canUse(who,'help',fast)) return { ok:false, cd:remaining(who,'help') };
     use(who,'help');
     return { ok:true, action:'help', msg:rand(HELP_MSGS), duration:6000 };
   }
-  function taunt(who) {
-    if (!canUse(who,'taunt')) return { ok:false, cd:remaining(who,'taunt') };
+  function taunt(who, fast) {
+    if (!canUse(who,'taunt',fast)) return { ok:false, cd:remaining(who,'taunt') };
     use(who,'taunt');
     const r = Math.random();
     const pool = r < 0.4 ? TAUNTS : r < 0.7 ? INSULTS : POLITICAL_TAUNTS;
