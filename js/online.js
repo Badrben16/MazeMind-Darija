@@ -6,13 +6,14 @@ const Online = (() => {
 
   // ── Fill in your Firebase config here ──────────
   const FIREBASE_CONFIG = {
-    apiKey:            "VOTRE_API_KEY",
-    authDomain:        "VOTRE_PROJECT.firebaseapp.com",
-    databaseURL:       "https://VOTRE_PROJECT-default-rtdb.firebaseio.com",
-    projectId:         "VOTRE_PROJECT_ID",
-    storageBucket:     "VOTRE_PROJECT.appspot.com",
-    messagingSenderId: "VOTRE_SENDER_ID",
-    appId:             "VOTRE_APP_ID",
+    apiKey:            "AIzaSyAM0TqYGKH78gvWpIGG_0t8xnY3Ezag3zM",
+    authDomain:        "mazemind-e9bfc.firebaseapp.com",
+    databaseURL:       "https://mazemind-e9bfc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "mazemind-e9bfc",
+    storageBucket:     "mazemind-e9bfc.firebasestorage.app",
+    messagingSenderId: "378682874203",
+    appId:             "1:378682874203:web:0a22885962caf18cda627e",
+    measurementId:     "G-XL5NZHFGG8",
   };
 
   const PROFILES = [
