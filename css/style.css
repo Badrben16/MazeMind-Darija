@@ -640,3 +640,164 @@ kbd {
   transition: width .3s ease;
 }
 .exit-pts-label { font-size: 11px; direction: rtl; }
+
+/* ════════════════════════════════════════
+   ONLINE SCREENS
+════════════════════════════════════════ */
+.btn-online {
+  background: linear-gradient(135deg,#2ECC71,#1a8a50);
+  color:#fff; box-shadow:0 4px 24px rgba(46,204,113,.4);
+  padding:14px 32px; font-size:17px;
+  border:none; border-radius:50px; font-weight:700; cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+}
+.btn-online:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(46,204,113,.6); }
+.btn-secondary {
+  background:linear-gradient(135deg,var(--red),#a00);
+  color:#fff; box-shadow:0 4px 20px rgba(255,51,51,.3);
+  padding:12px 24px; font-size:16px;
+  border:none; border-radius:50px; font-weight:700; cursor:pointer;
+  transition:transform .15s;
+}
+.btn-secondary:hover { transform:translateY(-2px); }
+.local-divider { color:var(--muted); font-size:13px; margin:4px 0; }
+
+.online-warning {
+  background:rgba(255,51,51,.15); border:1px solid var(--red);
+  border-radius:10px; padding:10px 18px; font-size:13px; color:#ff8888;
+  max-width:400px; text-align:center; margin-bottom:12px;
+}
+.online-setup-card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:20px; padding:28px 32px;
+  display:flex; flex-direction:column; gap:18px;
+  width:min(480px,92vw);
+}
+.online-setup-actions { display:flex; flex-direction:column; gap:14px; align-items:center; }
+.online-action-block  { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; }
+.online-hint { font-size:12px; color:var(--muted); text-align:center; }
+.online-divider { color:var(--muted); font-size:13px; }
+.online-code-field {
+  width:140px; text-align:center; letter-spacing:6px; font-size:28px;
+  font-weight:900; background:rgba(255,255,255,.07);
+  border:2px solid rgba(255,255,255,.2); border-radius:12px;
+  color:#fff; padding:8px 14px; outline:none; text-transform:uppercase;
+}
+.online-code-field:focus { border-color:var(--blue); }
+.online-error { color:var(--red); font-size:13px; text-align:center; min-height:18px; }
+
+/* Lobby */
+.room-code-display {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
+  background:rgba(255,215,0,.08); border:2px solid rgba(255,215,0,.3);
+  border-radius:16px; padding:14px 24px; margin-bottom:12px;
+}
+.room-code-label { color:var(--muted); font-size:14px; }
+.room-code-value {
+  font-size:42px; font-weight:900; color:var(--gold);
+  letter-spacing:8px; text-shadow:0 0 20px rgba(255,215,0,.5);
+}
+.online-lobby-hint { color:var(--muted); font-size:14px; text-align:center; max-width:400px; margin-bottom:16px; }
+.online-players-list { display:flex; flex-direction:column; gap:10px; width:min(380px,90vw); }
+.online-player-slot {
+  display:flex; align-items:center; gap:12px;
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:12px; padding:12px 16px;
+  transition:opacity .2s;
+}
+.online-player-slot.offline { opacity:.4; }
+.op-emoji { font-size:28px; }
+.op-name  { font-size:16px; font-weight:700; flex:1; }
+.op-badge { font-size:11px; padding:3px 10px; border-radius:20px; color:#000; font-weight:800; }
+.lobby-bottom-actions { display:flex; gap:12px; margin-top:20px; align-items:center; flex-wrap:wrap; justify-content:center; }
+
+/* ════════════════════════════════════════
+   D-PAD TOUCH CONTROLS
+════════════════════════════════════════ */
+.dpad {
+  position: fixed; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  user-select: none; -webkit-user-select: none;
+}
+.dpad-center   { bottom: 100px; left: 50%; transform: translateX(-50%); }
+.dpad-bottom-left  { bottom: 80px; left: 16px; }
+.dpad-bottom-right { bottom: 80px; right: 16px; }
+
+.dpad-row { display:flex; align-items:center; gap:4px; }
+.dpad-mid  { width:52px; height:52px; }
+
+.dpad-btn {
+  width: 58px; height: 58px;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.25);
+  border-radius: 14px; color: #fff;
+  font-size: 22px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; touch-action: none;
+  transition: background .1s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.dpad-btn:active, .dpad-btn.pressed {
+  background: rgba(56,160,255,.4);
+  border-color: var(--blue);
+  transform: scale(0.92);
+}
+
+/* Touch action buttons (punish/pardon/help/taunt) */
+.touch-actions {
+  position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; z-index: 20;
+}
+.touch-act-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(0,0,0,.5); border: 2px solid rgba(255,255,255,.3);
+  font-size: 22px; cursor: pointer; touch-action: none;
+  display:flex; align-items:center; justify-content:center;
+  -webkit-tap-highlight-color: transparent;
+}
+.touch-act-btn:active { transform:scale(.88); background:rgba(56,160,255,.3); }
+
+/* ════════════════════════════════════════
+   MOBILE RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .logo { font-size: 60px !important; }
+  .tagline { font-size: 14px !important; }
+  .btn { padding: 12px 22px; font-size: 15px; }
+  .btn.small { padding: 8px 16px; font-size: 12px; }
+  .btn-online { padding: 12px 24px; font-size: 15px; }
+  .intro-content { gap: 12px !important; padding: 0 12px; }
+  .mode-toggle { gap: 6px; }
+  .mode-btn { padding: 8px 14px; font-size: 13px; }
+
+  .question-card { padding: 16px 12px; margin: 8px; }
+  .question-text { font-size: 16px !important; }
+  .answer-btn { font-size: 14px !important; padding: 10px 12px !important; }
+
+  .hud { padding: 6px 10px !important; gap: 6px !important; }
+  .hud-timer { font-size: 20px !important; }
+  .hud-pname { font-size: 12px !important; }
+  .hud-score { font-size: 11px !important; }
+  .hud-avatar { width: 28px !important; height: 28px !important; font-size: 18px !important; }
+
+  #exit-req-bar { padding: 4px 10px; gap: 8px; }
+  .exit-player-req { font-size: 10px; gap: 5px; }
+  .exit-progress-track { width: 55px; }
+
+  .king-photo-wrapper { width: 150px !important; height: 150px !important; }
+  .king-title { font-size: 16px !important; }
+
+  /* Push canvas up to make room for d-pad */
+  #screen-game { justify-content: flex-start; padding-top: 4px; }
+  #maze-canvas { max-height: calc(100vh - 220px); }
+
+  .dpad-btn { width: 52px; height: 52px; font-size: 20px; }
+  .dpad-mid { width: 44px; height: 44px; }
+  .room-code-value { font-size: 32px; letter-spacing: 5px; }
+  .online-setup-card { padding: 18px 16px; }
+}
+
+@media (max-width: 400px) {
+  .dpad-btn { width: 46px; height: 46px; font-size: 18px; border-radius: 10px; }
+  .dpad-mid { width: 38px; }
+}

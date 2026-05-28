@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>ديال العقل 🇲🇦</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -14,19 +16,80 @@
     <div class="intro-content">
       <div class="logo darija-logo">ديال<span>العقل</span></div>
       <p class="tagline darija-tag">🇲🇦 Le jeu qui fait chauffer le cerveau</p>
+
+      <button class="btn btn-online darija-btn" onclick="Game.goToOnline()">
+        🌐&nbsp; Jouer en ligne (2–4 joueurs)
+      </button>
+
+      <div class="local-divider">— ou jouer sur cet écran —</div>
+
       <div class="mode-toggle">
         <button class="mode-btn active" id="btn-mode-1" onclick="Game.setMode(1)">👤 Solo</button>
         <button class="mode-btn"        id="btn-mode-2" onclick="Game.setMode(2)">👥 2 Joueurs</button>
-        <button class="mode-btn"        id="btn-mode-4" onclick="Game.setMode(4)">🔥 4 Joueurs</button>
       </div>
-      <button class="btn btn-primary darija-btn" onclick="Game.goTo('char-select')">▶&nbsp; Jouer !</button>
-      <button class="btn btn-ghost" onclick="Game.quit()">✕&nbsp; Quitter</button>
+      <button class="btn btn-primary" onclick="Game.goTo('char-select')">▶&nbsp; Jouer !</button>
+
+      <button class="btn btn-ghost small" onclick="Game.quit()">✕&nbsp; Quitter</button>
       <div class="darija-disclaimer">
         ⚠️ Les insultes dans ce jeu sont en dialecte marocain et ne visent personne — c'est juste pour rire !
       </div>
     </div>
-    <div class="intro-version">v2.0 · نسخة الدارجة 🇲🇦</div>
+    <div class="intro-version">v2.1 · نسخة الدارجة 🇲🇦</div>
     <button class="sound-btn" id="btn-sound" onclick="Game.toggleSound()">🔊</button>
+  </div>
+
+  <!-- ═══════════════════════════════ ONLINE SETUP ══════════════════════════════ -->
+  <div id="screen-online-setup" class="screen">
+    <h2 class="screen-title">🌐 Jouer en ligne</h2>
+
+    <div id="online-config-warning" class="online-warning hidden">
+      ⚠️ Firebase non configuré — suis les instructions dans <code>js/online.js</code>
+    </div>
+
+    <div class="online-setup-card">
+      <input type="text" id="online-name-input" class="name-input-field"
+             placeholder="Ton prénom / لقبك..." maxlength="16" autocomplete="off" />
+
+      <div class="online-setup-actions">
+        <div class="online-action-block">
+          <button class="btn btn-primary" onclick="Game.onlineCreate()">🏠 Créer une salle</button>
+          <p class="online-hint">Tu seras l'hôte. Partage le code avec tes amis.</p>
+        </div>
+        <div class="online-divider">— ou —</div>
+        <div class="online-action-block">
+          <input type="text" id="online-code-input" class="online-code-field"
+                 placeholder="CODE" maxlength="4" autocomplete="off"
+                 oninput="this.value=this.value.toUpperCase()" />
+          <button class="btn btn-secondary" onclick="Game.onlineJoin()">🚪 Rejoindre</button>
+        </div>
+      </div>
+
+      <p id="online-error-msg" class="online-error"></p>
+    </div>
+
+    <button class="btn btn-ghost small" onclick="Game.goTo('intro')" style="margin-top:16px">← Retour</button>
+  </div>
+
+  <!-- ═══════════════════════════════ ONLINE LOBBY ═════════════════════════════ -->
+  <div id="screen-online-lobby" class="screen">
+    <h2 class="screen-title">Salle d'attente</h2>
+
+    <div class="room-code-display">
+      <span class="room-code-label">Code de la salle :</span>
+      <span class="room-code-value" id="lobby-room-code">????</span>
+      <button class="btn btn-ghost small" onclick="Game.copyRoomCode()">📋 Copier</button>
+    </div>
+
+    <p class="online-lobby-hint" id="online-lobby-hint">En attente des joueurs…</p>
+
+    <div id="online-players-list" class="online-players-list"></div>
+
+    <div class="lobby-bottom-actions">
+      <button class="btn btn-ghost small" onclick="Game.goTo('intro')">← Quitter</button>
+      <button class="btn btn-primary hidden" id="btn-online-start" onclick="Game.onlineLobbyStart()" disabled>
+        🎮 Lancer la partie !
+      </button>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════ NAME INPUT ═══════════════════════════════ -->
@@ -45,6 +108,63 @@
     <canvas id="maze-canvas"></canvas>
     <div id="interaction-bar" class="interaction-bar hidden"></div>
     <div class="controls-hint" id="controls-hint"></div>
+
+    <!-- Touch D-pad — solo & online (un seul joueur par écran) -->
+    <div id="dpad-single" class="dpad dpad-center hidden">
+      <button class="dpad-btn dpad-up"
+        ontouchstart="Game.touchStart('up',$event)" ontouchend="Game.touchEnd('up')"
+        onmousedown="Game.touchStart('up')" onmouseup="Game.touchEnd('up')">↑</button>
+      <div class="dpad-row">
+        <button class="dpad-btn dpad-left"
+          ontouchstart="Game.touchStart('left',$event)" ontouchend="Game.touchEnd('left')"
+          onmousedown="Game.touchStart('left')" onmouseup="Game.touchEnd('left')">←</button>
+        <div class="dpad-mid"></div>
+        <button class="dpad-btn dpad-right"
+          ontouchstart="Game.touchStart('right',$event)" ontouchend="Game.touchEnd('right')"
+          onmousedown="Game.touchStart('right')" onmouseup="Game.touchEnd('right')">→</button>
+      </div>
+      <button class="dpad-btn dpad-down"
+        ontouchstart="Game.touchStart('down',$event)" ontouchend="Game.touchEnd('down')"
+        onmousedown="Game.touchStart('down')" onmouseup="Game.touchEnd('down')">↓</button>
+    </div>
+
+    <!-- Touch D-pad gauche — P1 (mode local 2J mobile) -->
+    <div id="dpad-left" class="dpad dpad-bottom-left hidden">
+      <button class="dpad-btn dpad-up"
+        ontouchstart="Game.touchStart2('p1','up',$event)" ontouchend="Game.touchEnd2('p1','up')">↑</button>
+      <div class="dpad-row">
+        <button class="dpad-btn dpad-left"
+          ontouchstart="Game.touchStart2('p1','left',$event)" ontouchend="Game.touchEnd2('p1','left')">←</button>
+        <div class="dpad-mid"></div>
+        <button class="dpad-btn dpad-right"
+          ontouchstart="Game.touchStart2('p1','right',$event)" ontouchend="Game.touchEnd2('p1','right')">→</button>
+      </div>
+      <button class="dpad-btn dpad-down"
+        ontouchstart="Game.touchStart2('p1','down',$event)" ontouchend="Game.touchEnd2('p1','down')">↓</button>
+    </div>
+
+    <!-- Touch D-pad droite — P2 (mode local 2J mobile) -->
+    <div id="dpad-right" class="dpad dpad-bottom-right hidden">
+      <button class="dpad-btn dpad-up"
+        ontouchstart="Game.touchStart2('p2','up',$event)" ontouchend="Game.touchEnd2('p2','up')">↑</button>
+      <div class="dpad-row">
+        <button class="dpad-btn dpad-left"
+          ontouchstart="Game.touchStart2('p2','left',$event)" ontouchend="Game.touchEnd2('p2','left')">←</button>
+        <div class="dpad-mid"></div>
+        <button class="dpad-btn dpad-right"
+          ontouchstart="Game.touchStart2('p2','right',$event)" ontouchend="Game.touchEnd2('p2','right')">→</button>
+      </div>
+      <button class="dpad-btn dpad-down"
+        ontouchstart="Game.touchStart2('p2','down',$event)" ontouchend="Game.touchEnd2('p2','down')">↓</button>
+    </div>
+
+    <!-- Boutons d'action tactiles (en ligne / 2J) -->
+    <div id="touch-actions" class="touch-actions hidden">
+      <button class="touch-act-btn" ontouchstart="Game.doMyAction('punish')">💀</button>
+      <button class="touch-act-btn" ontouchstart="Game.doMyAction('pardon')">🤝</button>
+      <button class="touch-act-btn" ontouchstart="Game.doMyAction('help')">💡</button>
+      <button class="touch-act-btn" ontouchstart="Game.doMyAction('taunt')">😜</button>
+    </div>
   </div>
 
   <!-- ════════════════════ QUESTION ════════════════════ -->
@@ -58,13 +178,13 @@
     </div>
   </div>
 
-  <!-- ══════════════════ KING OVERLAY (correct) ══════════════════ -->
+  <!-- ══════════════════ KING OVERLAY ══════════════════ -->
   <div id="king-overlay" class="king-overlay hidden">
     <div class="king-card">
       <div class="king-stars">⭐⭐⭐⭐⭐</div>
       <div class="king-photo-wrapper">
         <img id="king-photo" src="img/king.jpg" alt="جلالة الملك"
-             onerror="document.getElementById('king-photo-fallback').style.display='flex'; this.style.display='none'">
+             onerror="document.getElementById('king-photo-fallback').style.display='flex';this.style.display='none'">
         <div id="king-photo-fallback" class="king-fallback" style="display:none">
           <div class="king-crown-big">👑</div>
           <div class="king-silhouette">🤴</div>
@@ -82,10 +202,9 @@
       <div class="wrong-king-header">❌ غلطتي — هادا جزاءك!</div>
       <div class="wrong-king-photo-wrapper">
         <img id="wrong-king-photo" src="img/wrong-king.jpg" alt="😬"
-             onerror="document.getElementById('wrong-king-fallback').style.display='flex'; this.style.display='none'">
+             onerror="document.getElementById('wrong-king-fallback').style.display='flex';this.style.display='none'">
         <div id="wrong-king-fallback" class="wrong-king-fallback" style="display:none">
-          <div style="font-size:80px">😂</div>
-          <div style="font-size:40px">💀</div>
+          <div style="font-size:80px">😂</div><div style="font-size:40px">💀</div>
         </div>
       </div>
       <div class="wrong-king-footer arabic-text">-50 نقطة — هشا تعلّم!</div>
@@ -117,10 +236,15 @@
 
   <div id="chat-layer"></div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <script src="js/sounds.js"></script>
   <script src="js/interactions.js"></script>
   <script src="js/maze.js"></script>
   <script src="js/questions.js"></script>
+  <script src="js/online.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>

@@ -23,6 +23,17 @@ const CELL_ICONS = {
   [CELL.START]:    '🏁',
 };
 
+// Seeded PRNG — ensures identical maze for all online players
+let _rng = () => Math.random();
+function setMazeSeed(seed) {
+  let s = (seed || Date.now()) >>> 0;
+  _rng = () => {
+    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+function resetMazeSeed() { _rng = () => Math.random(); }
+
 class MazeGrid {
   constructor(cols, rows, trapChance = 12, bonusChance = 10, exitX = -1, exitY = -1) {
     this.cols = cols;
@@ -63,7 +74,7 @@ class MazeGrid {
           neighbors.push([nx, ny, d]);
       }
       if (!neighbors.length) { stack.pop(); continue; }
-      const [nx, ny, dir] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      const [nx, ny, dir] = neighbors[Math.floor(_rng() * neighbors.length)];
       this.get(cx, cy).walls[dir] = false;
       this.get(nx, ny).walls[(dir + 2) % 4] = false;
       this.get(nx, ny).visited = true;
@@ -80,7 +91,7 @@ class MazeGrid {
       for (let x = 0; x < this.cols; x++) {
         const c = this.get(x, y);
         if (c.type !== CELL.NORMAL) continue;
-        const r = Math.random() * 100;
+        const r = _rng() * 100;
         const t = this.trapChance;
         const b = t + this.bonusChance;
         if      (r < t)      c.type = CELL.TRAP;
